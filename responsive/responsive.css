@@ -1,0 +1,65 @@
+@charset "UTF-8";
+/* CSS Document */
+
+.homer {
+    background-image: url(homer.jpg);
+    width: 333px;
+    height: 500px;
+}
+
+@media (min-width:1200px) {
+    .homer {
+        position: absolute;
+        clip: rect(0px 166px 125px 0px);
+        /* clip-path: polygon(0 0， 100% 0， 100% 50%， 0 50%); */
+    }
+}
+
+@media (min-width:1100px) and (max-width:1200px) {
+    .homer {
+        position: absolute;
+        clip: rect(0px 333px 125px 166px);
+    }
+}
+
+@media (min-width:1000px) and (max-width:1100px) {
+    .homer {
+        position: absolute;
+        clip: rect(125px 166px 250px 0px);
+    }
+}
+
+@media (min-width:900px) and (max-width:1000px) {
+    .homer {
+        position: absolute;
+        clip: rect(125px 333px 250px 166px);
+    }
+}
+
+@media (min-width:800px) and (max-width:900px) {
+    .homer {
+        position: absolute;
+        clip: rect(250px 166px 375px 0px);
+    }
+}
+
+@media (min-width:700px) and (max-width:800px) {
+    .homer {
+        position: absolute;
+        clip: rect(250px 333px 375px 166px);
+    }
+}
+
+@media (min-width:600px) and (max-width:700px) {
+    .homer {
+        position: absolute;
+        clip: rect(375px 166px 500px 0px);
+    }
+}
+
+@media (max-width:600px) {
+    .homer {
+        position: absolute;
+        clip: rect(375px 333px 500px 166px);
+    }
+}
