@@ -6,6 +6,7 @@
 * Upon clicking on your marker on the map, display an information window (a.k.a., infowindow) noting the closest vehicle from where you are including the distance away in miles.
 * Render a polyline (any color) that connects "your" marker to the marker of the closest vehicle.
 * Upon clicking on a marker for a vehicle, show popup infowindow noting how far away the vehicle is, in miles, from you.
+* Using the Google Places API to display the restaurants, bars, and coffee shops within one mile around you.
 
 ### The piazza is really helpful for me to solve most of the problems.
 
