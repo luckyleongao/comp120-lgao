@@ -53,7 +53,8 @@ function initMap() {
     // Request vehicle infos from server
     function getVehicleInfoList(pos) {
         var xhttp = new XMLHttpRequest();
-        var url = "https://jordan-marsh.herokuapp.com/rides";
+        // var url = "https://jordan-marsh.herokuapp.com/rides";
+        var url = "https://polar-oasis-73227.herokuapp.com/rides";
         var params = "username=pPHjoZLM&lat=" + pos.lat + "&lng=" + pos.lng;
         xhttp.open("POST", url, true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -67,20 +68,24 @@ function initMap() {
 
     // Calculate distances from my position to all the other vehicles
     function calMinDistance(myPos, jsonData) {
-        const dist_arr = [];
-        var my_pos = new google.maps.LatLng(myPos.lat, myPos.lng);
-        for (let i = 0; i < jsonData.length; i++) {
-            var car_pos = new google.maps.LatLng(jsonData[i].lat, jsonData[i].lng);
-            var distance = google.maps.geometry.spherical.computeDistanceBetween(my_pos, car_pos);
-            dist_arr[i] = distance; 
-        };
-        var min_dist = Math.min.apply(Math, dist_arr);
-        var min_index = dist_arr.indexOf(min_dist);
-        var min_dist_car = jsonData[min_index].username;
-
-        addInfoWindowListener(min_dist, min_dist_car);
-        addPolyline(myPos, jsonData[min_index].lat, jsonData[min_index].lng);
-        createVehicleMarkers(jsonData, dist_arr);
+        // console.log(jsonData);
+        // console.log(jsonData.length);
+        if (jsonData.length > 0) {
+            const dist_arr = [];
+            var my_pos = new google.maps.LatLng(myPos.lat, myPos.lng);
+            for (let i = 0; i < jsonData.length; i++) {
+                var car_pos = new google.maps.LatLng(jsonData[i].lat, jsonData[i].lng);
+                var distance = google.maps.geometry.spherical.computeDistanceBetween(my_pos, car_pos);
+                dist_arr[i] = distance; 
+            };
+            var min_dist = Math.min.apply(Math, dist_arr);
+            var min_index = dist_arr.indexOf(min_dist);
+            var min_dist_car = jsonData[min_index].username;
+    
+            addInfoWindowListener(min_dist, min_dist_car);
+            addPolyline(myPos, jsonData[min_index].lat, jsonData[min_index].lng);
+            createVehicleMarkers(jsonData, dist_arr);
+        }
     }
 
     // Add info window for my position
