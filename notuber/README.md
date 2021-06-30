@@ -1,4 +1,4 @@
-### This lab creates a page that displays a Google Map of vehicles with latitude and longitude from the ride request API: https://jordan-marsh.herokuapp.com/rides. 
+### This lab creates a page that displays a Google Map of vehicles with latitude and longitude from the ride request API: https://polar-oasis-73227.herokuapp.com/rides. 
 
 * The map shows your geolocation with the default red pin Google uses.
 * Make a request to the ride-hailing API, providing your username, latitude and longitude.
