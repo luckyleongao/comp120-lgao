@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Page Title</title>
+<style>
+body {
+    background-color: lightgray;
+    font-family: Arial, Helvetica, sans-serif;
+}
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;    
+}
+td {
+  white-space:pre;
+}
+</style>
+</head>
+<body>
+
+<h1>A Security Assessment of Ride-Hailing Service</h1>
+<h2>1. Introduction</h2>
+<p>The Ride-Hailing Service is a product that could display nearby vehicles for passengers on the map. It mainly includes the following five functions:</p>
+<ul>
+  <li>Show the nearby vehicles for a given passenger on the map, and store the ride request from a passenger into a database;</li>
+  <li>Update the position infos for a vehicle that is in the database;</li>
+  <li>Display a list all passenger records for a given username if records exist in the database;</li>
+  <li>Display a list all vehicle records for a given username if records exist in the database;</li>
+  <li>Display a list all passenger records if records exist in the database;</li>
+</ul>
+<p>I am hired as a security consultant to document and resolve the security and privacy issues of the Ride-Hailing Service.</p>
+
+<h2>2. Methodology</h2>
+<p>Since we already have the server-vuln.js file, we can use a static application testing (SAST) tool called "nodejsscan" (https://github.com/ajinabraham/NodeJsScan) to find insecure code patterns using simple pattern matcher from "libsast" and syntax-aware semantic code pattern search tool "semgrep".</p>
+<p>In addition, we can use curl to test if there exist XSS issues on the server side.</p>
+<p>Finally, we want use the tool "snyk" (https://github.com/snyk/snyk) to find the known vulnerabilities in open-source dependencies.</p>
+
+<h2>3. Abstract of Findings</h2>
+<p>There exists many vulnerabilities of the Ride-Hailing Service, the most common and severe are:</p>
+<ul>
+  <li>Cross-Site Scripting (XSS)</li>
+  <li>SQL injection (SQLi)</li>
+  <li>Open-source vulnerabilities</li>
+</ul>
+<p>If an attacker exploits XSS vulnerabilities, they could perform malicious actions like account tampering, data theft, remote control, or even malware distribution.</p>
+<p>If an attacker exploits SQLi vulnerabilities, they could pull the list of all tables in the databases and then retrieve any information they want. Even worse, they are able to delete all the information in the database.</p>
+<p>If an attacker exploits Open-source vulnerabilities, they can put in malicious code to steal/compromise users data.</p>
+
+<h2>4. Issues Found</h2>
+<table style="width:100%">
+    <tr>
+      <th>Issue</th>
+      <th>Location</th>
+      <th>Severity of issue</th>
+      <th>Description of issue</th>
+      <th>Proof of vulnerability</th>
+      <th>Resolution</th>
+    </tr>
+    <tr>
+      <td>Cross-Site Scripting</td>
+      <td>http://jordan-marsh.herokuapp.com/<br>
+server-vuln.js line number: 26
+      </td>
+      <td>High.<br>
+The attacker could perform malicious actions
+like account tampering, data theft, remote control,
+or even malware distribution.
+      </td>
+      <td>Using curl to post a script tag as a parameter to visit the POST rides/ method,
+we succesfully insert the script tag into database.
+<img src="issue1 proof.png"></img></td>
+      <td>When we try to dispaly all passenger records,
+the page alerts the message we just inserted into the database.
+<img src="issue1.png"></img></td>
+      <td>Validating and sanitizing input from users to 
+ensure it only contains acceptable characters 
+that cannot be used to launch XSS attracks.</td>
+    </tr>
+
+    <tr>
+      <td>SQL injection</td>
+      <td>http://jordan-marsh.herokuapp.com/
+passenger.json?username=kimi or '1'='1'<br>
+server-vuln.js line number: 72
+      </td>
+      <td>High.<br>
+The attacker could get all tables in the databases 
+and then retrieve any information they want. 
+Even worse, they could delete all the information
+in database.
+      </td>
+      <td>Instead of using a username to get relevant passenger records,
+we pass the parameter: username=kimi or '1'='1'.
+This could get all the passenger records in the database.
+<img src="issue2 proof.png"></img></td>
+      <td>We could get all the passenger records by adding or '1'='1',
+because this would cause the SQL language always be true. 
+Besides, we can delete all the passenger records by adding ;drop table passengers.</td>
+      <td>To mitigate SQL injections, developers should always 
+perform proper input validation. When input from the user 
+fails the validation checks, the SQL query is not executed.
+Another way of preventing SQL injection is using parameterized 
+queries or prepared statements instead of concatenations. 
+Parameterized queries are used to abstract 
+the SQL syntax from the input parameters.</td>
+    </tr>
+
+    <tr>
+      <td>SQL injection</td>
+      <td>http://jordan-marsh.herokuapp.com/
+vehicle.json?username=vehicle or '1'='1'<br>
+server-vuln.js line number: 87
+      </td>
+      <td>High.<br>
+The attacker could get all tables in the databases 
+and then retrieve any information they want. 
+Even worse, they could delete all the information
+in database.
+      </td>
+      <td>Instead of using a username to get relevant vehicle records,
+we pass the parameter: username=kimi or '1'='1'.
+This could get all the vehicle records in the database.
+<img src="issue3 proof.png"></img></td>
+      <td>We could get all the vehicle records by adding or '1'='1',
+because this would cause the SQL language always be true. 
+Besides, we can delete all the vehicle records by adding ;drop table vehicles.</td>
+      <td>To mitigate SQL injections, developers should always 
+perform proper input validation. When input from the user 
+fails the validation checks, the SQL query is not executed.
+Another way of preventing SQL injection is using parameterized 
+queries or prepared statements instead of concatenations. 
+Parameterized queries are used to abstract 
+the SQL syntax from the input parameters.</td>
+    </tr>
+
+    <tr>
+      <td>Origin Validation Error</td>
+      <td>server-vuln.js line number: 17 and 42</td>
+      <td>Medium.<br>
+The vulnerability allows a remote attacker 
+to bypass implemented security restrictions.
+      </td>
+      <td>Access-Control-Allow-Origin response header is set
+to "*". This will disable CROS Same Origin Policy restrictions.
+      </td>
+      <td>Using tool "nodejsscan" we get:
+<img src="issue4 proof.png"></img></td>   
+      <td>It's important to limit the scope of trusted websites.</td>
+    </tr>
+
+    <tr>
+      <td>Regular Expression Denial of Service</td>
+      <td>package.json validator-13.0.0
+package.json express-4.15.2
+package.json compression-1.7.0
+      </td>
+      <td>Medium and low.<br>
+ReDoS attack exploits the fact that most 
+Regular Expression implementations may reach 
+extreme situations that cause them to work 
+very slowly (exponentially related to input size). 
+An attacker can then cause a program using 
+a Regular Expression to enter these extreme 
+situations and then hang for a very long time.
+      </td>
+      <td>By using the tool "snyk", we can test each package in the package.json file.
+      </td>
+      <td>Using tool "snyk" we get:
+<img src="issue5-1.png"></img><br>
+<img src="issue5-2.png"></img><br>
+<img src="issue5-3.png"></img>
+</td>   
+
+      <td>Package managers (e.g npm) helps manage to a 
+certain degree these vulnerabilities from packages 
+installed from npm by providing vulnerability reports 
+and providing a fix for them.</td>
+    </tr>
+
+  </table>
+
+
+<h2>5. Conclusion</h2>
+<p>Adopting good coding practices can secure applications against common JavaScript vulnerabilities on both the client-side and server-side. When using JavaScript, always follow the following key guidelines for enhanced security:</p>
+<ul>
+      <li>Never trust user input</li>
+      <li>Sanitize user input</li>
+      <li>Define a content security policy</li>
+      <li>Encrypt data transmitted between the client and the server</li>
+      <li>Conduct regular scans on your codebase</li>
+</ul>
+<p>Following these best coding practices is usually the first step for securing your web applications.</p>
+<p>Besides, by using security measures provided by package managers ( such as npm ) and security solutions, companies can stay ahead of the vulnerabilities which arise from using these open-source packages.</p>
+
+</body>
+</html>
