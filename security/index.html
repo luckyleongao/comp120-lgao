@@ -4,7 +4,7 @@
 <title>Page Title</title>
 <style>
 body {
-    background-color: lightgray;
+    background-color: #f5f5d5;
     font-family: Arial, Helvetica, sans-serif;
 }
 table, th, td {
@@ -36,7 +36,8 @@ td {
 
 <h2>2. Methodology</h2>
 <p>Since we already have the server-vuln.js file, we can use a static application testing (SAST) tool called "nodejsscan" (https://github.com/ajinabraham/NodeJsScan) to find insecure code patterns using simple pattern matcher from "libsast" and syntax-aware semantic code pattern search tool "semgrep".</p>
-<p>In addition, we can use curl to test if there exist XSS issues on the server side.</p>
+<p>In addition, we can use “curl” to test if there exist XSS issues on the server side.</p>
+<p>At the same time, the tool “OWASP ZAP” can be used to check SQL injection issues.</p>
 <p>Finally, we want use the tool "snyk" (https://github.com/snyk/snyk) to find the known vulnerabilities in open-source dependencies.</p>
 
 <h2>3. Abstract of Findings</h2>
@@ -84,7 +85,7 @@ that cannot be used to launch XSS attracks.</td>
     <tr>
       <td>SQL injection</td>
       <td>http://jordan-marsh.herokuapp.com/
-passenger.json?username=kimi or '1'='1'<br>
+passenger.json?username= or 1=1 --<br>
 server-vuln.js line number: 72
       </td>
       <td>High.<br>
@@ -93,18 +94,20 @@ and then retrieve any information they want.
 Even worse, they could delete all the information
 in database.
       </td>
-      <td>Instead of using a username to get relevant passenger records,
-we pass the parameter: username=kimi or '1'='1'.
-This could get all the passenger records in the database.
+      <td>By using the tool "OWASP ZAP", we fuzz the username parameter 
+for the route /passenger.json. Thus we get the following issues:
+<img src="issue2.png"></img></td>
+      <td>We could get all the passenger records by adding parameter " 'or 1=1 -- " to 
+username of route /passenger.json, because this would set the SQL language 
+always be true.
 <img src="issue2 proof.png"></img></td>
-      <td>We could get all the passenger records by adding or '1'='1',
-because this would cause the SQL language always be true. 
-Besides, we can delete all the passenger records by adding ;drop table passengers.</td>
-      <td>To mitigate SQL injections, developers should always 
-perform proper input validation. When input from the user 
-fails the validation checks, the SQL query is not executed.
-Another way of preventing SQL injection is using parameterized 
-queries or prepared statements instead of concatenations. 
+
+<td>To mitigate SQL injections, developers should 
+always perform proper input validation. When input 
+from the user fails the validation checks, the SQL 
+query is not executed. Another way of preventing 
+SQL injection is using parameterized queries or 
+prepared statements instead of concatenations. 
 Parameterized queries are used to abstract 
 the SQL syntax from the input parameters.</td>
     </tr>
@@ -112,7 +115,7 @@ the SQL syntax from the input parameters.</td>
     <tr>
       <td>SQL injection</td>
       <td>http://jordan-marsh.herokuapp.com/
-vehicle.json?username=vehicle or '1'='1'<br>
+vehicle.json?username= or 1=1 --<br>
 server-vuln.js line number: 87
       </td>
       <td>High.<br>
@@ -121,18 +124,19 @@ and then retrieve any information they want.
 Even worse, they could delete all the information
 in database.
       </td>
-      <td>Instead of using a username to get relevant vehicle records,
-we pass the parameter: username=kimi or '1'='1'.
-This could get all the vehicle records in the database.
+      <td>By using the tool "OWASP ZAP", we fuzz the username parameter 
+for the route /vehicle.json. Thus we get the following issues:
+<img src="issue2.png"></img></td>
+      <td>We could get all the vehicle records by adding parameter " 'or 1=1 -- " to 
+username of route /vehicle.json, because this would set the SQL language 
+always be true.
 <img src="issue3 proof.png"></img></td>
-      <td>We could get all the vehicle records by adding or '1'='1',
-because this would cause the SQL language always be true. 
-Besides, we can delete all the vehicle records by adding ;drop table vehicles.</td>
-      <td>To mitigate SQL injections, developers should always 
-perform proper input validation. When input from the user 
-fails the validation checks, the SQL query is not executed.
-Another way of preventing SQL injection is using parameterized 
-queries or prepared statements instead of concatenations. 
+      <td>To mitigate SQL injections, developers should 
+always perform proper input validation. When input 
+from the user fails the validation checks, the SQL 
+query is not executed. Another way of preventing 
+SQL injection is using parameterized queries or 
+prepared statements instead of concatenations. 
 Parameterized queries are used to abstract 
 the SQL syntax from the input parameters.</td>
     </tr>
@@ -153,7 +157,8 @@ to "*". This will disable CROS Same Origin Policy restrictions.
     </tr>
 
     <tr>
-      <td>Regular Expression Denial of Service</td>
+      <td>Regular Expression 
+Denial of Service</td>
       <td>package.json validator-13.0.0
 package.json express-4.15.2
 package.json compression-1.7.0
